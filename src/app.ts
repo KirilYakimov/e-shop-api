@@ -1,9 +1,10 @@
-import express = require('express');
+import express = require("express");
 import { Application, Request, Response } from "express";
 
 // Routes
 import IndexRoute from "./routes/index.routes";
 import UserRoute from "./routes/auth/User.routes";
+import AddressRoute from "./routes/Address.routes";
 
 export class App {
     app: Application;
@@ -27,6 +28,7 @@ export class App {
     private routes() {
         this.app.use(IndexRoute);
         this.app.use(UserRoute);
+        this.app.use(AddressRoute);
     }
 
     async listen() {

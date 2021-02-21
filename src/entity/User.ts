@@ -4,34 +4,62 @@ import {
     Column,
     CreateDateColumn,
     UpdateDateColumn,
+    OneToMany,
+    getManager,
 } from "typeorm";
+import { decode } from 'jsonwebtoken'
 import { IsEmail, Length } from "class-validator";
+import { RefreshToken } from "./RefreshToken";
+import Address from "./Address";
 
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ name: "name" })
-    @Length(3, 45)
-    name: string;
-
-    @Column({ name: "email" })
+    @Column({ name: "email", unique: true, nullable: false })
     @IsEmail()
     email: string;
 
-    @Column({ name: "password" })
-    @Length(6, 255)
+    @Column({ name: "password", unique: true, nullable: false })
     password: string;
 
+    @Column({ name: "first_name" })
+    @Length(2, 45)
+    firstName: string;
+
+    @Column({ name: "last_name" })
+    @Length(2, 45)
+    lastName: string;
+
     @CreateDateColumn({ name: "create_date" })
-    CreateDate: Date;
+    createDate: Date;
 
     @UpdateDateColumn({ name: "update_date" })
-    UpdateDate: Date;
+    cpdateDate: Date;
 
-    @Column({ name: "is_active" })
-    isActive: number;
+    @Column({ name: "is_active", default: true })
+    isActive: boolean;
+
+    @Column({ name: "is_admin", default: false })
+    isAdmin: boolean;
+
+    @OneToMany((type) => RefreshToken, (refreshToken) => refreshToken.user)
+    refreshTokens: RefreshToken[];
+
+    @OneToMany((type) => Address, (address) => address.user)
+    addresses: Address[];
+
+    public static async fetchUserFromToken(token: string) {
+        try {
+            const decodedToken = decode(token);
+            const user = getManager().getRepository(this).findOne({ id: decodedToken['id']})
+            
+            return user;
+        } catch (error) {
+            return null;
+        }
+    }
 }
 
 export default User;
